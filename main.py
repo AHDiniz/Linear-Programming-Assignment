@@ -1,17 +1,10 @@
 import pygame as pg
+import game
 
-pg.init()
+app : game.Game = game.Game()
 
-window = pg.display.set_mode((500, 400))
+window = pg.display.set_mode((600, 400))
+pg.display.set_caption('Just Another Zelda Clone')
 
-running = True
-
-while running:
-    pg.draw.rect(window, (255, 0, 0), (0, 0, 50, 30))
-
-    for event in pg.event.get():
-        if event.type == pg.KEYDOWN:
-            if event.key == pg.K_ESCAPE:
-                running = False
-
-    pg.display.update()
+app.start()
+app.update(window)
