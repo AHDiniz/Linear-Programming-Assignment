@@ -1,5 +1,18 @@
 import pygame as pg
 
+MS_PER_UPDATE : int = 17
+
+class Time:
+    delta_time = 0
+
+    @classmethod
+    def set_delta(self, d : int):
+        self.delta_time = d
+    
+    @classmethod
+    def delta(self):
+        return self.delta_time
+
 class Transform:
     def __init__(self, p : tuple, r : float):
         self.__position = p
@@ -85,13 +98,27 @@ class Game:
         self.__scenes[self.__current_scene].start()
     
     def update(self, window):
+        prev : float = pg.time.get_ticks()
+        lag : float = 0
+
+        t : Time = Time()
+
         while self.__running:
-            self.__scenes[self.__current_scene].update(window)
+            current : float = pg.time.get_ticks()
+            delta = current - prev
+            prev = current
+            lag += delta
+
+            t.set_delta(delta)
 
             for event in pg.event.get():
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_ESCAPE:
                         self.__running = False
+
+            while lag >= MS_PER_UPDATE:
+                self.__scenes[self.__current_scene].update(window)
+                lag -= MS_PER_UPDATE
 
             pg.display.update()
     
