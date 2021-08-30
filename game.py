@@ -43,10 +43,9 @@ class GameObject:
     
     def update(self, surface : pg.Surface):
         for component in self.__components:
-            component.update(surface)
+            component.update(surface, self)
 
     def add_component(self, component):
-        component.set_parent(self)
         self.__components.append(component)
 
 class Component:
@@ -60,11 +59,8 @@ class Component:
     def start(self):
         pass
     
-    def update(self, surface : pg.Surface):
+    def update(self, surface : pg.Surface, game_object : GameObject):
         pass
-    
-    def set_parent(self, go : GameObject):
-        self.__game_object = go
 
 class Scene:
     def __init__(self, game_objects : list):

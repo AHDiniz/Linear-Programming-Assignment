@@ -10,7 +10,6 @@ class SpriteRenderer(Component):
         self.__sprite_height = sprite_height
     
     def start(self):
-        self.__position : tuple = Component.game_object.position
         self.__sprite_sheet = pg.image.load(self.__sheet_path)
         self.__width = self.__sprite_sheet.get_width()
         self.__height = self.__sprite_sheet.get_height()
@@ -18,8 +17,8 @@ class SpriteRenderer(Component):
         self.__columns = int(self.__width / self.__sprite_width)
         self.__sprite_rect = (0, 0, self.__sprite_width, self.__sprite_height)
     
-    def update(self, surface : pg.Surface):
-        surface.blit(self.__sprite_sheet, self.__position, self.__sprite_rect)
+    def update(self, surface : pg.Surface, game_object : GameObject):
+        surface.blit(self.__sprite_sheet, game_object.position, self.__sprite_rect)
 
     def set_current_sprite(self, sprite_index : int):
         sprite_index = sprite_index % (self.__rows * self.__columns)
