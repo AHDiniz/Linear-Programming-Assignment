@@ -6,6 +6,8 @@ class CellType(Enum):
     ENEMY_1 = 2
     ENEMY_2 = 3
     ENEMY_3 = 4
+    KEY = 5
+    DOOR = 6
 
 class Cell:
     wall_pairs = {'N' : 'S', 'S' : 'N', 'E' : 'W', 'W' : 'E'}
