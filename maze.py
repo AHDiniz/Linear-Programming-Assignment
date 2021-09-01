@@ -1,9 +1,19 @@
+from enum import Enum
+
+class CellType(Enum):
+    NONE = 0
+    PLAYER = 1
+    ENEMY_1 = 2
+    ENEMY_2 = 3
+    ENEMY_3 = 4
+
 class Cell:
     wall_pairs = {'N' : 'S', 'S' : 'N', 'E' : 'W', 'W' : 'E'}
 
-    def __init__(self, x : int, y : int):
+    def __init__(self, x : int, y : int, cell_type : CellType):
         self.__x, self.__y = x, y
         self.__walls = ['N': True, 'S': True, 'E': True, 'W': True]
+        self.__cell_type = cell_type
     
     @property
     def x(self):
@@ -12,6 +22,14 @@ class Cell:
     @property
     def y(self):
         return self.__y
+    
+    def get_cell_type(self):
+        return self.__cell_type
+    
+    def set_cell_type(self, cell_type : CellType):
+        self.__cell_type = cell_type
+    
+    cell_type = property(get_cell_type, set_cell_type)
 
     def has_all_walls(self):
         return all(self.__walls.values())
@@ -30,7 +48,7 @@ class Maze:
         for i in range(self.__height):
             self.__map.append(list([]))
             for j in range(self.__width):
-                self.__map[i].append(Cell(i, j))
+                self.__map[i].append(Cell(i, j, CellType.NONE))
     
     def cell_at(self, x : int, y : int) -> Cell:
         return self.__map[x][y]
