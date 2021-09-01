@@ -20,7 +20,7 @@ class Cell:
         self.__walls[wall] = False
         other.__walls[Cell.wall_pairs[wall]] = False
 
-class Map:
+class Maze:
     def __init__(self, width : int, height : int, tile_types : list):
         self.__width : int = width
         self.__height : int = height
