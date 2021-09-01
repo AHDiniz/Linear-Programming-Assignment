@@ -12,20 +12,29 @@ class CellType(Enum):
 class Cell:
     wall_pairs = {'N' : 'S', 'S' : 'N', 'E' : 'W', 'W' : 'E'}
 
-    def __init__(self, x : int, y : int, cell_type : CellType):
-        self.__x, self.__y = x, y
-        self.__walls = ['N': True, 'S': True, 'E': True, 'W': True]
-        self.__cell_type = cell_type
+    def __init__(self, cell_code: int, x : int, y : int, cell_type : CellType):
+        self.__cell_code : int = cell_code
+        self.__x : int, self.__y : int = x, y
+        self.__walls : dict = ['N': True, 'S': True, 'E': True, 'W': True]
+        self.__cell_type : CellType = cell_type
     
     @property
-    def x(self):
+    def x(self) -> int:
         return self.__x
     
     @property
-    def y(self):
+    def y(self) -> int:
         return self.__y
     
-    def get_cell_type(self):
+    @property
+    def cell_code(self) -> int:
+        return self.__cell_code
+    
+    @property
+    def cell_walls(self) -> dict:
+        return self.__walls
+    
+    def get_cell_type(self) -> CellType:
         return self.__cell_type
     
     def set_cell_type(self, cell_type : CellType):
@@ -50,7 +59,7 @@ class Maze:
         for i in range(self.__height):
             self.__map.append(list([]))
             for j in range(self.__width):
-                self.__map[i].append(Cell(i, j, CellType.NONE))
+                self.__map[i].append(Cell(i * self.__height + j, i, j, CellType.NONE))
     
     def cell_at(self, x : int, y : int) -> Cell:
         return self.__map[x][y]
@@ -66,7 +75,28 @@ class Maze:
                     neighbours.append((direction, neighbour))
         return neighbours
 
-    def generate(start_x : int, start_y : int):
+    def to_adj_matrix(self) -> list:
+        graph : list = list([])
+        for i in range(self.__height):
+            graph.append([])
+            for j in range(self.__width):
+                graph[i].append(0)
+        
+        for row in range(self.__height):
+            for column in range(self.__width):
+                cell : Cell = self.cell_at(row, column)
+                if cell.walls['N']:
+                    graph[cell.cell_code][self.cell_at(cell.x, cell.y - 1).cell_code] = 1
+                if cell.walls['S']:
+                    graph[cell.cell_code][self.cell_at(cell.x, cell.y + 1).cell_code] = 1
+                if cell.walls['E']:
+                    graph[cell.cell_code][self.cell_at(cell.x + 1, cell.y).cell_code] = 1
+                if cell.walls['W']:
+                    graph[cell.cell_code][self.cell_at(cell.x - 1, cell.y).cell_code] = 1
+
+        return graph
+
+    def generate(self, start_x : int, start_y : int):
         n : int = self.__width * self.__height
         cell_stack : list = []
         current_cell : Cell = self.cell_at(start_x, start_y)
