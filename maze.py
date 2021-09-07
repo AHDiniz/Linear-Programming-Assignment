@@ -1,3 +1,5 @@
+import numpy as np
+import random
 from enum import Enum
 
 class CellType(Enum):
@@ -14,8 +16,9 @@ class Cell:
 
     def __init__(self, cell_code: int, x : int, y : int, cell_type : CellType):
         self.__cell_code : int = cell_code
-        self.__x : int, self.__y : int = x, y
-        self.__walls : dict = ['N': True, 'S': True, 'E': True, 'W': True]
+        self.__x : int = x
+        self.__y : int = y
+        self.__walls : dict = {'N': True, 'S': True, 'E': True, 'W': True}
         self.__cell_type : CellType = cell_type
     
     @property
@@ -45,21 +48,21 @@ class Cell:
     def has_all_walls(self):
         return all(self.__walls.values())
     
-    def knock_down_wall(self, other : Cell, wall : str):
+    def knock_down_wall(self, other, wall : str):
         self.__walls[wall] = False
         other.__walls[Cell.wall_pairs[wall]] = False
 
 class Maze:
-    def __init__(self, width : int, height : int, tile_types : list):
+    def __init__(self, width : int, height : int):
         self.__width : int = width
         self.__height : int = height
-        self.__tile_types : list = tile_types
         self.__map : list = list([])
 
         for i in range(self.__height):
             self.__map.append(list([]))
             for j in range(self.__width):
-                self.__map[i].append(Cell(i * self.__height + j, i, j, CellType.NONE))
+                print((i * self.__width + j) - 2)
+                self.__map[i].append(Cell((i * self.__width + j), i, j, CellType.NONE))
     
     def cell_at(self, x : int, y : int) -> Cell:
         return self.__map[x][y]
@@ -76,22 +79,18 @@ class Maze:
         return neighbours
 
     def to_adj_matrix(self) -> list:
-        graph : list = list([])
-        for i in range(self.__height):
-            graph.append([])
-            for j in range(self.__width):
-                graph[i].append(0)
+        graph : np.ndarray = np.ndarray((self.__width * self.__height, self.__width * self.__height))
         
         for row in range(self.__height):
             for column in range(self.__width):
                 cell : Cell = self.cell_at(row, column)
-                if cell.walls['N']:
+                if cell.cell_walls['N'] and cell.y - 1 >= 0:
                     graph[cell.cell_code][self.cell_at(cell.x, cell.y - 1).cell_code] = 1
-                if cell.walls['S']:
+                if cell.cell_walls['S'] and cell.y + 1 < self.__height:
                     graph[cell.cell_code][self.cell_at(cell.x, cell.y + 1).cell_code] = 1
-                if cell.walls['E']:
+                if cell.cell_walls['E'] and cell.x + 1 < self.__width:
                     graph[cell.cell_code][self.cell_at(cell.x + 1, cell.y).cell_code] = 1
-                if cell.walls['W']:
+                if cell.cell_walls['W'] and cell.x - 1 >= 0:
                     graph[cell.cell_code][self.cell_at(cell.x - 1, cell.y).cell_code] = 1
 
         return graph
