@@ -53,10 +53,11 @@ class Cell:
         other.__walls[Cell.wall_pairs[wall]] = False
 
 class Maze:
-    def __init__(self, rows : int, columns : int):
+    def __init__(self, rows : int, columns : int, enemy_count : int = 3):
         self.__rows : int = rows
         self.__columns : int = columns
         self.__map : list = list([])
+        self.__enemy_count : int = enemy_count
 
         for i in range(self.__rows):
             self.__map.append(list([]))
@@ -109,3 +110,23 @@ class Maze:
             cell_stack.append(current_cell)
             current_cell = next_cell
             visited_cells += 1
+    
+    def set_different_cell_types(self):
+        used_cells : list = []
+        enemy_type_list : list = [CellType.ENEMY_1, CellType.ENEMY_2, CellType.ENEMY_3]
+        
+        def pick_a_cell(cell_type : CellType):
+            while True:
+                row : int = random.choice(range(self.__rows))
+                column : int = random.choice(range(self.__columns))
+
+                if not (row, column) in used_cells:
+                    used_cells.append((row, column))
+                    self.cell_at(row, column).cell_type = cell_type
+                    break
+
+        for cell_type in [CellType.PLAYER, CellType.DOOR, CellType.KEY]:
+            pick_a_cell(cell_type)
+        
+        for i in range(self.__enemy_count):
+            pick_a_cell(random.choice(enemy_type_list))
