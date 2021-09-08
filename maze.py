@@ -53,16 +53,15 @@ class Cell:
         other.__walls[Cell.wall_pairs[wall]] = False
 
 class Maze:
-    def __init__(self, width : int, height : int):
-        self.__width : int = width
-        self.__height : int = height
+    def __init__(self, rows : int, columns : int):
+        self.__rows : int = rows
+        self.__columns : int = columns
         self.__map : list = list([])
 
-        for i in range(self.__height):
+        for i in range(self.__rows):
             self.__map.append(list([]))
-            for j in range(self.__width):
-                print((i * self.__width + j) - 2)
-                self.__map[i].append(Cell((i * self.__width + j), i, j, CellType.NONE))
+            for j in range(self.__columns):
+                self.__map[i].append(Cell((i * self.__columns + j), i, j, CellType.NONE))
     
     def cell_at(self, x : int, y : int) -> Cell:
         return self.__map[x][y]
@@ -72,31 +71,31 @@ class Maze:
         neighbours = []
         for direction, (dx, dy) in delta:
             x2, y2 = cell.x + dx, cell.y + dy
-            if (0 <= x2 < self.__width) and (0 <= y2 < self.__height):
+            if (0 <= x2 < self.__rows) and (0 <= y2 < self.__columns):
                 neighbour : Cell = self.cell_at(x2, y2)
                 if neighbour.has_all_walls():
                     neighbours.append((direction, neighbour))
         return neighbours
 
     def to_adj_matrix(self) -> list:
-        graph : np.ndarray = np.ndarray((self.__width * self.__height, self.__width * self.__height))
+        graph : np.ndarray = np.zeros((self.__rows * self.__columns, self.__rows * self.__columns), 'int')
         
-        for row in range(self.__height):
-            for column in range(self.__width):
+        for row in range(self.__rows):
+            for column in range(self.__columns):
                 cell : Cell = self.cell_at(row, column)
-                if cell.cell_walls['N'] and cell.y - 1 >= 0:
+                if cell.cell_walls['N'] and 0 <= cell.y - 1 < self.__columns and 0 <= cell.x < self.__rows:
                     graph[cell.cell_code][self.cell_at(cell.x, cell.y - 1).cell_code] = 1
-                if cell.cell_walls['S'] and cell.y + 1 < self.__height:
+                if cell.cell_walls['S'] and 0 <= cell.y + 1 < self.__columns and 0 <= cell.x < self.__rows:
                     graph[cell.cell_code][self.cell_at(cell.x, cell.y + 1).cell_code] = 1
-                if cell.cell_walls['E'] and cell.x + 1 < self.__width:
+                if cell.cell_walls['E'] and 0 <= cell.x + 1 < self.__rows and 0 <= cell.y < self.__columns:
                     graph[cell.cell_code][self.cell_at(cell.x + 1, cell.y).cell_code] = 1
-                if cell.cell_walls['W'] and cell.x - 1 >= 0:
+                if cell.cell_walls['W'] and 0 <= cell.x - 1 < self.__rows and 0 <= cell.y < self.__columns:
                     graph[cell.cell_code][self.cell_at(cell.x - 1, cell.y).cell_code] = 1
 
         return graph
 
     def generate(self, start_x : int, start_y : int):
-        n : int = self.__width * self.__height
+        n : int = self.__rows * self.__columns
         cell_stack : list = []
         current_cell : Cell = self.cell_at(start_x, start_y)
         visited_cells : int = 1
