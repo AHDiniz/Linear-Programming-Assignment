@@ -66,6 +66,10 @@ class Maze:
             for j in range(self.__columns):
                 self.__map[i].append(Cell((i * self.__columns + j), i, j, CellType.NONE))
     
+    @property
+    def enemy_count(self) -> int:
+        return self.__enemy_count
+
     def cell_at(self, x : int, y : int) -> Cell:
         return self.__map[x][y]
     
