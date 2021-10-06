@@ -104,14 +104,9 @@ class Maze:
                     neighbours.append((direction, neighbour))
         return neighbours
 
-    def to_adj_matrix(self) -> list:
+    def to_adj_matrix(self) -> np.ndarray:
         cell_count : int = self.__rows * self.__columns + 1 + self.__enemy_count
         graph : np.ndarray = np.zeros((cell_count, cell_count), 'int')
-
-        key_position : tuple = (self.positions_of_type(CellType.KEY))[0]
-        enemies_positions : list = self.positions_of_type(CellType.ENEMY_1)
-        enemies_positions += self.positions_of_type(CellType.ENEMY_2)
-        enemies_positions += self.positions_of_type(CellType.ENEMY_3)
         
         current_out_cell : int = self.__rows * self.__columns
 
