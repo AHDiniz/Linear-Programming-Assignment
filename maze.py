@@ -61,6 +61,9 @@ class Maze:
         self.__enemy_count : int = enemy_count
         self.__adj_matrix : list = None
 
+        self.__key_mat_indexes : tuple = None
+        self.__enemies_mat_indexes : list = []
+
         for i in range(self.__rows):
             self.__map.append(list([]))
             for j in range(self.__columns):
@@ -69,6 +72,14 @@ class Maze:
     @property
     def enemy_count(self) -> int:
         return self.__enemy_count
+    
+    @property
+    def key_mat_indexes(self) -> tuple:
+        return self.__key_mat_indexes
+    
+    @property
+    def enemies_mat_indexes(self) -> list:
+        return self.__enemies_mat_indexes
 
     def cell_at(self, x : int, y : int) -> Cell:
         return self.__map[x][y]
@@ -94,19 +105,56 @@ class Maze:
         return neighbours
 
     def to_adj_matrix(self) -> list:
-        graph : np.ndarray = np.zeros((self.__rows * self.__columns, self.__rows * self.__columns), 'int')
+        cell_count : int = self.__rows * self.__columns + 1 + self.__enemy_count
+        graph : np.ndarray = np.zeros((cell_count, cell_count), 'int')
+
+        key_position : tuple = (self.positions_of_type(CellType.KEY))[0]
+        enemies_positions : list = self.positions_of_type(CellType.ENEMY_1)
+        enemies_positions += self.positions_of_type(CellType.ENEMY_2)
+        enemies_positions += self.positions_of_type(CellType.ENEMY_3)
         
+        current_out_cell : int = self.__rows * self.__columns
+
+        def set_adj_matrix(cell : Cell, cell_code : int):
+            if cell.cell_walls['N'] and 0 <= cell.y - 1 < self.__columns and 0 <= cell.x < self.__rows:
+                other : Cell = self.cell_at(cell.x, cell.y - 1)
+                graph[cell_code][other.cell_code] = 1
+            if cell.cell_walls['S'] and 0 <= cell.y + 1 < self.__columns and 0 <= cell.x < self.__rows:
+                other : Cell = self.cell_at(cell.x, cell.y + 1)
+                graph[cell_code][other.cell_code] = 1
+            if cell.cell_walls['E'] and 0 <= cell.x + 1 < self.__rows and 0 <= cell.y < self.__columns:
+                other : Cell = self.cell_at(cell.x + 1, cell.y)
+                graph[cell_code][other.cell_code] = 1
+            if cell.cell_walls['W'] and 0 <= cell.x - 1 < self.__rows and 0 <= cell.y < self.__columns:
+                other : Cell = self.cell_at(cell.x - 1, cell.y)
+                graph[cell_code][other.cell_code] = 1
+
         for row in range(self.__rows):
             for column in range(self.__columns):
                 cell : Cell = self.cell_at(row, column)
-                if cell.cell_walls['N'] and 0 <= cell.y - 1 < self.__columns and 0 <= cell.x < self.__rows:
-                    graph[cell.cell_code][self.cell_at(cell.x, cell.y - 1).cell_code] = 1
-                if cell.cell_walls['S'] and 0 <= cell.y + 1 < self.__columns and 0 <= cell.x < self.__rows:
-                    graph[cell.cell_code][self.cell_at(cell.x, cell.y + 1).cell_code] = 1
-                if cell.cell_walls['E'] and 0 <= cell.x + 1 < self.__rows and 0 <= cell.y < self.__columns:
-                    graph[cell.cell_code][self.cell_at(cell.x + 1, cell.y).cell_code] = 1
-                if cell.cell_walls['W'] and 0 <= cell.x - 1 < self.__rows and 0 <= cell.y < self.__columns:
-                    graph[cell.cell_code][self.cell_at(cell.x - 1, cell.y).cell_code] = 1
+
+                if cell.cell_type in [CellType.NONE, CellType.PLAYER, CellType.DOOR]:
+                    set_adj_matrix(cell, cell.cell_code)
+                elif cell.cell_type == CellType.KEY:
+                    self.__key_mat_indexes[0] = cell.cell_code
+                    self.__key_mat_indexes[1] = current_out_cell
+
+                    graph[cell.cell_code][current_out_cell] = 1
+
+                    set_adj_matrix(cell, current_out_cell)
+
+                    current_out_cell += 1
+                else:
+                    enemy_indexes : tuple = (0, 0)
+                    enemy_indexes[0] = cell.cell_code
+                    enemy_indexes[1] = current_out_cell
+                    self.__enemies_mat_indexes.append(enemy_indexes)
+
+                    graph[cell.cell_code][current_out_cell] = 1
+
+                    set_adj_matrix(cell, current_out_cell)
+
+                    current_out_cell += 1
 
         return graph
 
