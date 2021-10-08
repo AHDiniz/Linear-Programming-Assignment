@@ -61,6 +61,9 @@ class Maze:
         self.__enemy_count : int = enemy_count
         self.__adj_matrix : list = None
 
+        self.__player_cell_code : int = -1
+        self.__door_cell_code : int = -1
+
         self.__key_mat_indexes : tuple = None
         self.__enemies_mat_indexes : list = []
 
@@ -68,7 +71,7 @@ class Maze:
             self.__map.append(list([]))
             for j in range(self.__columns):
                 self.__map[i].append(Cell((i * self.__columns + j), i, j, CellType.NONE))
-    
+
     @property
     def enemy_count(self) -> int:
         return self.__enemy_count
@@ -80,6 +83,14 @@ class Maze:
     @property
     def enemies_mat_indexes(self) -> list:
         return self.__enemies_mat_indexes
+    
+    @property
+    def player_cell_code(self) -> int:
+        return self.__player_cell_code
+    
+    @property
+    def door_cell_code(self) -> int:
+        return self.__door_cell_code
 
     def cell_at(self, x : int, y : int) -> Cell:
         return self.__map[x][y]
@@ -130,9 +141,14 @@ class Maze:
 
                 if cell.cell_type in [CellType.NONE, CellType.PLAYER, CellType.DOOR]:
                     set_adj_matrix(cell, cell.cell_code)
+
+                    if cell.cell_type == CellType.PLAYER:
+                        self.__player_cell_code = cell.cell_code
+                    elif cell.cell_type == CellType.DOOR:
+                        self.__door_cell_code = cell.cell_code
+
                 elif cell.cell_type == CellType.KEY:
-                    self.__key_mat_indexes[0] = cell.cell_code
-                    self.__key_mat_indexes[1] = current_out_cell
+                    self.__key_mat_indexes = cell.cell_code, current_out_cell
 
                     graph[cell.cell_code][current_out_cell] = 1
 
@@ -140,12 +156,10 @@ class Maze:
 
                     current_out_cell += 1
                 else:
-                    enemy_indexes : tuple = (0, 0)
-                    enemy_indexes[0] = cell.cell_code
-                    enemy_indexes[1] = current_out_cell
+                    enemy_indexes : tuple = cell.cell_code, current_out_cell
                     self.__enemies_mat_indexes.append(enemy_indexes)
 
-                    graph[cell.cell_code][current_out_cell] = 1
+                    graph[cell.cell_code][current_out_cell] = 0
 
                     set_adj_matrix(cell, current_out_cell)
 
