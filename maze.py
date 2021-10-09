@@ -38,6 +38,14 @@ class Cell:
     def cell_walls(self) -> dict:
         return self.__walls
     
+    @property
+    def neighbour_count(self) -> int:
+        result : int = 0
+        for _, value in self.__walls.items():
+            if value:
+                result += 1
+        return result
+    
     def get_cell_type(self) -> CellType:
         return self.__cell_type
     
@@ -115,6 +123,58 @@ class Maze:
                     neighbours.append((direction, neighbour))
         return neighbours
 
+    def generate(self, start_x : int, start_y : int):
+
+        n : int = self.__rows * self.__columns
+        cell_stack : list = []
+        current_cell : Cell = self.cell_at(start_x, start_y)
+        visited_cells : int = 1
+        while visited_cells < n:
+            neighbours : list = self.find_valid_neighbour(current_cell)
+            if not neighbours:
+                current_cell = cell_stack.pop()
+                continue
+            direction, next_cell = random.choice(neighbours)
+            current_cell.knock_down_wall(next_cell, direction)
+            cell_stack.append(current_cell)
+            current_cell = next_cell
+            visited_cells += 1
+
+    def define_reduction_data(self):
+        visited_cells : list = [False] * (self.__rows * self.__columns)
+        player : Cell = (self.positions_of_type(CellType.PLAYER))[0]
+
+        def get_neighbours(cell : Cell) -> list:
+            neighbours : list = []
+            if cell.cell_walls['N']:
+                neighbours.append(self.cell_at(cell.x, cell.y - 1))
+            if cell.cell_walls['E']:
+                neighbours.append(self.cell_at(cell.x + 1, cell.y))
+            if cell.cell_walls['S']:
+                neighbours.append(self.cell_at(cell.x, cell.y + 1))
+            if cell.cell_walls['W']:
+                neighbours.append(self.cell_at(cell.x - 1, cell.y))
+            return neighbours
+
+        stack : list = [player]
+        paths : list = []
+
+        while not np.empty(stack):
+            cell : Cell = stack.pop()
+            if not visited_cells[cell.cell_code]:
+                path : list = []
+                path.append(cell)
+                visited_cells[cell.cell_code] = True
+                neighbours : list = get_neighbours(cell)
+                for n in neighbours:
+                    stack.append(n)
+                if cell.neighbour_count <= 2 or cell.cell_type == CellType.NONE:
+                    paths.append(path)
+                else:
+                    pass
+                
+                
+
     def to_adj_matrix(self) -> np.ndarray:
         cell_count : int = self.__rows * self.__columns + 1 + self.__enemy_count
         graph : np.ndarray = np.zeros((cell_count, cell_count), 'int')
@@ -166,24 +226,6 @@ class Maze:
                     current_out_cell += 1
 
         return graph
-
-    def generate(self, start_x : int, start_y : int):
-        n : int = self.__rows * self.__columns
-        cell_stack : list = []
-        current_cell : Cell = self.cell_at(start_x, start_y)
-        visited_cells : int = 1
-        while visited_cells < n:
-            neighbours : list = self.find_valid_neighbour(current_cell)
-            if not neighbours:
-                current_cell = cell_stack.pop()
-                continue
-            direction, next_cell = random.choice(neighbours)
-            current_cell.knock_down_wall(next_cell, direction)
-            cell_stack.append(current_cell)
-            current_cell = next_cell
-            visited_cells += 1
-        
-        self.__adj_matrix = self.to_adj_matrix()
 
     def distance(self, a_id : int, b_id : int) -> int:
         distances : list = [inf] * len(self.__adj_matrix)
