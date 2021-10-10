@@ -140,11 +140,7 @@ class Maze:
             current_cell = next_cell
             visited_cells += 1
 
-    def define_reduction_data(self):
-        visited_cells : list = [False] * (self.__rows * self.__columns)
-        player : Cell = (self.positions_of_type(CellType.PLAYER))[0]
-
-        def get_neighbours(cell : Cell) -> list:
+    def get_neighbours(self, cell : Cell) -> list:
             neighbours : list = []
             if cell.cell_walls['N']:
                 neighbours.append(self.cell_at(cell.x, cell.y - 1))
@@ -156,24 +152,44 @@ class Maze:
                 neighbours.append(self.cell_at(cell.x - 1, cell.y))
             return neighbours
 
-        stack : list = [player]
+    def define_reduction_data(self):
+        visited_cells : list = [False] * (self.__rows * self.__columns)
+        player : Cell = (self.positions_of_type(CellType.PLAYER))[0]
+
         paths : list = []
 
-        while not np.empty(stack):
-            cell : Cell = stack.pop()
-            if not visited_cells[cell.cell_code]:
-                path : list = []
+        def recursion(cell : Cell, path : list):
+            visited_cells[cell.cell_code] = True
+            neighbours : list = self.get_neighbours(cell)
+            neighbours_count : int = len(neighbours)
+            visited_neighbours : int = len(filter(lambda x: visited_cells[x.cell_code], neighbours))
+            if neighbours_count == 1:
                 path.append(cell)
-                visited_cells[cell.cell_code] = True
-                neighbours : list = get_neighbours(cell)
-                for n in neighbours:
-                    stack.append(n)
-                if cell.neighbour_count <= 2 or cell.cell_type == CellType.NONE:
-                    paths.append(path)
+                paths.append(path)
+            else:
+                if cell.cell_type != CellType.NONE:
+                    if neighbours_count == visited_neighbours:
+                        path.append(cell)
+                        paths.append(path)
+                    elif neighbours_count - visited_neighbours == 1:
+                        path.append(cell)
+                        for n in neighbours:
+                            if not visited_cells[n.cell_count]:
+                                recursion(n, path)
+                    else:
+                        path.append(cell)
+                        paths.append(path)
+                        for n in neighbours:
+                            if not visited_cells[n.cell_count]:
+                                recursion(n, [cell])
                 else:
-                    pass
-                
-                
+                    path.append(cell)
+                    paths.append(path)
+                    for n in neighbours:
+                        if not visited_cells[n.cell_count]:
+                            recursion(n, [cell])
+
+            recursion(player, [])
 
     def to_adj_matrix(self) -> np.ndarray:
         cell_count : int = self.__rows * self.__columns + 1 + self.__enemy_count
