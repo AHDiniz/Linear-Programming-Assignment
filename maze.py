@@ -142,19 +142,20 @@ class Maze:
 
     def get_neighbours(self, cell : Cell) -> list:
             neighbours : list = []
-            if cell.cell_walls['N']:
+            if not cell.cell_walls['N']:
                 neighbours.append(self.cell_at(cell.x, cell.y - 1))
-            if cell.cell_walls['E']:
+            if not cell.cell_walls['E']:
                 neighbours.append(self.cell_at(cell.x + 1, cell.y))
-            if cell.cell_walls['S']:
+            if not cell.cell_walls['S']:
                 neighbours.append(self.cell_at(cell.x, cell.y + 1))
-            if cell.cell_walls['W']:
+            if not cell.cell_walls['W']:
                 neighbours.append(self.cell_at(cell.x - 1, cell.y))
             return neighbours
 
-    def define_reduction_data(self):
+    def define_reduction_data(self) -> list:
         visited_cells : list = [False] * (self.__rows * self.__columns)
-        player : Cell = (self.positions_of_type(CellType.PLAYER))[0]
+        player_pos : tuple = (self.positions_of_type(CellType.PLAYER))[0]
+        player : Cell = self.cell_at(player_pos[0], player_pos[1])
 
         paths : list = []
 
@@ -162,34 +163,27 @@ class Maze:
             visited_cells[cell.cell_code] = True
             neighbours : list = self.get_neighbours(cell)
             neighbours_count : int = len(neighbours)
-            visited_neighbours : int = len(filter(lambda x: visited_cells[x.cell_code], neighbours))
-            if neighbours_count == 1:
+            visited_neighbours_list : list = list(filter(lambda x: visited_cells[x.cell_code], neighbours))
+            visited_neighbours : int = len(visited_neighbours_list)
+            if neighbours_count == 1 or neighbours_count == visited_neighbours:
                 path.append(cell)
                 paths.append(path)
+            elif cell.cell_type != CellType.NONE and neighbours_count - visited_neighbours == 1:
+                path.append(cell)
+                for n in neighbours:
+                    if not visited_cells[n.cell_code]:
+                        recursion(n, path)
             else:
-                if cell.cell_type != CellType.NONE:
-                    if neighbours_count == visited_neighbours:
-                        path.append(cell)
-                        paths.append(path)
-                    elif neighbours_count - visited_neighbours == 1:
-                        path.append(cell)
-                        for n in neighbours:
-                            if not visited_cells[n.cell_count]:
-                                recursion(n, path)
-                    else:
-                        path.append(cell)
-                        paths.append(path)
-                        for n in neighbours:
-                            if not visited_cells[n.cell_count]:
-                                recursion(n, [cell])
-                else:
-                    path.append(cell)
-                    paths.append(path)
-                    for n in neighbours:
-                        if not visited_cells[n.cell_count]:
-                            recursion(n, [cell])
+                path.append(cell)
+                paths.append(path)
+                for n in neighbours:
+                    if not visited_cells[n.cell_code]:
+                        recursion(n, [cell])
 
-            recursion(player, [])
+        recursion(player, [])
+
+        return paths
+
 
     def to_adj_matrix(self) -> np.ndarray:
         cell_count : int = self.__rows * self.__columns + 1 + self.__enemy_count

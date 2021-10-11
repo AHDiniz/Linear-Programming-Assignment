@@ -28,36 +28,57 @@ else:
     maze.generate(0, 0)
     maze.set_different_cell_types()
 
-    adj_matrix : np.ndarray = maze.to_adj_matrix()
+    player : Cell = maze.positions_of_type(CellType.PLAYER)[0]
+    print("Player Cell Code : " + str(maze.cell_at(player[0], player[1]).cell_code))
 
-    print(adj_matrix)
+    door : Cell = maze.positions_of_type(CellType.DOOR)[0]
+    print("Door Cell Code : " + str(maze.cell_at(door[0], door[1]).cell_code))
 
-    print("The maze was generated.")
+    key : Cell = maze.positions_of_type(CellType.KEY)[0]
+    print("Key Cell Code : " + str(maze.cell_at(key[0], key[1]).cell_code))
 
-    model : Model = Model(name = 'Game Level Playability Checker')
+    enemies : list = maze.positions_of_type(CellType.ENEMY_1) + maze.positions_of_type(CellType.ENEMY_2) + maze.positions_of_type(CellType.ENEMY_3)
+    for e in enemies:
+        print("Enemy cell code : " + str(maze.cell_at(e[0], e[1]).cell_code))
 
-    print("The optimization model was created.")
+    paths : list = maze.define_reduction_data()
 
-    capacities : dict = {}
-    costs : dict = {}
-    edges : list = []
+    for path in paths:
+        path_str : str = ""
+        for cell in path:
+            path_str += str(cell.cell_code) + " "
+        print(path_str)
 
-    enemy_positions : list = maze.enemies_mat_indexes
+    # adj_matrix : np.ndarray = maze.to_adj_matrix()
 
-    for row in range(adj_matrix.shape[0]):
-        for column in range(adj_matrix.shape[1]):
-            edge : tuple = (row, column)
-            edges.append(edge)
-            capacities[edge] = adj_matrix[row][column]
-            costs[edge] = 1 if (row, column) in enemy_positions else 99
+    # print(adj_matrix)
 
-    flow = model.addVars(edges, name = "flow")
+    # print("The maze was generated.")
 
-    model.addConstr(key_flow_constraint(flow, maze))
+    # model : Model = Model(name = 'Game Level Playability Checker')
 
-    for edge in edges:
-        model.addConstr(capacity_constraint(capacities, flow, edge))
+    # print("The optimization model was created.")
+
+    # capacities : dict = {}
+    # costs : dict = {}
+    # edges : list = []
+
+    # enemy_positions : list = maze.enemies_mat_indexes
+
+    # for row in range(adj_matrix.shape[0]):
+    #     for column in range(adj_matrix.shape[1]):
+    #         edge : tuple = (row, column)
+    #         edges.append(edge)
+    #         capacities[edge] = adj_matrix[row][column]
+    #         costs[edge] = 1 if (row, column) in enemy_positions else 99
+
+    # flow = model.addVars(edges, name = "flow")
+
+    # model.addConstr(key_flow_constraint(flow, maze))
+
+    # for edge in edges:
+    #     model.addConstr(capacity_constraint(capacities, flow, edge))
     
-    model.setObjective(objective(costs, flow, edges), GRB.MINIMIZE)
+    # model.setObjective(objective(costs, flow, edges), GRB.MINIMIZE)
 
-    model.optimize()
+    # model.optimize()
