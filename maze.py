@@ -127,6 +127,15 @@ class Maze:
                     neighbours.append((direction, neighbour))
         return neighbours
 
+    def find_bifurcations(self) -> list:
+        result : list = []
+        for row in self.__map:
+            for cell in row:
+                neighbours : list = self.get_neighbours(cell)
+                if len(neighbours) > 2:
+                    result.append(cell)
+        return result
+
     def generate(self, start_x : int, start_y : int):
 
         n : int = self.__rows * self.__columns
@@ -172,7 +181,7 @@ class Maze:
             if neighbours_count == 1 or neighbours_count == visited_neighbours:
                 path.append(cell)
                 paths.append(path)
-            elif cell.cell_type != CellType.NONE and neighbours_count - visited_neighbours == 1:
+            elif cell.cell_type == CellType.NONE and neighbours_count - visited_neighbours == 1:
                 path.append(cell)
                 for n in neighbours:
                     if not visited_cells[n.cell_code]:

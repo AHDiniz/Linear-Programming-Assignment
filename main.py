@@ -41,9 +41,19 @@ else:
     for e in enemies:
         print("Enemy cell code : " + str(maze.cell_at(e[0], e[1]).cell_code))
 
+    bifurcations : list = maze.find_bifurcations()
     paths : list = maze.define_reduction_data()
 
-    
+    bifurcation_str : str = "Bifurcations: "
+    for cell in bifurcations:
+        bifurcation_str += str(cell.cell_code) + " "
+    print(bifurcation_str)
+
+    for path in paths:
+        t : str = ""
+        for cell in path:
+            t += str(cell.cell_code) + " "
+        print(t)
 
     # adj_matrix : np.ndarray = maze.to_adj_matrix()
 
