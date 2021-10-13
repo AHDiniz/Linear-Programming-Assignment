@@ -100,6 +100,10 @@ class Maze:
     def door_cell_code(self) -> int:
         return self.__door_cell_code
 
+    @property
+    def dimensions(self) -> tuple:
+        return (self.__rows, self.__columns)
+
     def cell_at(self, x : int, y : int) -> Cell:
         return self.__map[x][y]
     

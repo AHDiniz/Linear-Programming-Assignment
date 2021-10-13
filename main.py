@@ -43,11 +43,7 @@ else:
 
     paths : list = maze.define_reduction_data()
 
-    for path in paths:
-        path_str : str = ""
-        for cell in path:
-            path_str += str(cell.cell_code) + " "
-        print(path_str)
+    
 
     # adj_matrix : np.ndarray = maze.to_adj_matrix()
 
