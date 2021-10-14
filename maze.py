@@ -198,7 +198,35 @@ class Maze:
         return paths
 
 
+    def to_reduced_adj_matrix(self) -> np.ndarray:
+        paths : list = self.define_reduction_data()
+        reverse_paths : list = []
+
+        nodes : list = []
+        edges : dict = []
+
+        for path in paths:
+            reverse_path : list = path.copy()
+            reverse_path.reverse()
+            reverse_paths.append(reverse_path)
+        
+        for reverse_path in reverse_paths:
+            paths.append(reverse_path)
+
+        for path in paths:
+            start : Cell = path[0]
+            end : Cell = path[:-1]
+
+            if not start in nodes:
+                nodes.append(start)
+            
+            if not end in nodes:
+                nodes.append(end)
+            
+            edges[(start.cell_code, end.cell_code)] = len(path)
+
     def to_adj_matrix(self) -> np.ndarray:
+
         cell_count : int = self.__rows * self.__columns + 1 + self.__enemy_count
         graph : np.ndarray = np.zeros((cell_count, cell_count), 'int')
         
