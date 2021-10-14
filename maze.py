@@ -240,11 +240,16 @@ class Maze:
                 edges[(start.cell_code, -start.cell_code)] = 1
             else:
                 edges[(start.cell_code, end.cell_code)] = len(path)
+            
+            if start.cell_type == CellType.KEY:
+                self.__key_mat_indexes = start.cell_code, end.cell_code
+                
 
         for node in nodes:
             index_dict[node.cell_code] = -1
             if node.cell_type in [CellType.KEY, CellType.ENEMY_1, CellType.ENEMY_2, CellType.ENEMY_3]:
                 index_dict[-node.cell_code] = -1
+                
         
         current_index : int = 0
         for edge, capacity in edges.items():
