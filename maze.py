@@ -223,8 +223,11 @@ class Maze:
             paths.append(reverse_path)
 
         for path in paths:
+            if len(path) == 1:
+                continue
+
             start : Cell = path[0]
-            end : Cell = path[:-1]
+            end : Cell = path[-1]
 
             if not start in nodes:
                 nodes.append(start)
@@ -232,14 +235,16 @@ class Maze:
             if not end in nodes:
                 nodes.append(end)
             
-            if start.cell_code in [CellType.KEY, CellType.ENEMY_1, CellType.ENEMY_2, CellType.ENEMY_3]:
+            if start.cell_type in [CellType.KEY, CellType.ENEMY_1, CellType.ENEMY_2, CellType.ENEMY_3]:
                 edges[(-start.cell_code, end.cell_code)] = len(path)
                 edges[(start.cell_code, -start.cell_code)] = 1
             else:
                 edges[(start.cell_code, end.cell_code)] = len(path)
 
         for node in nodes:
-            index_dict[node] = -1
+            index_dict[node.cell_code] = -1
+            if node.cell_type in [CellType.KEY, CellType.ENEMY_1, CellType.ENEMY_2, CellType.ENEMY_3]:
+                index_dict[-node.cell_code] = -1
         
         current_index : int = 0
         for edge, capacity in edges.items():
