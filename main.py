@@ -7,8 +7,10 @@ from maze import Maze, Cell, CellType
 def capacity_constraint(capacity : dict, flow : tupledict, edge : tuple) -> TempConstr:
     return flow[edge] <= capacity[edge]
 
-def key_flow_constraint(flow : tupledict, maze : Maze) -> TempConstr:
-    key_indexes = maze.key_mat_indexes
+def key_flow_constraint(flow : tupledict, maze : Maze, index_dict : dict) -> TempConstr:
+    print("Key Cell Codes: {key_mat_indexes}".format(key_mat_indexes=maze.key_mat_indexes))
+    print("Index Dict: {dict}".format(dict=index_dict))
+    key_indexes = index_dict[maze.key_mat_indexes[0]],index_dict[maze.key_mat_indexes[1]]
     return flow[key_indexes] == 1
 
 def objective(cost : dict, flow : tupledict, edges : list) -> LinExpr:
@@ -57,20 +59,21 @@ else:
 
     enemy_positions : list = maze.enemies_mat_indexes
 
-    # for row in range(adj_matrix.shape[0]):
-    #     for column in range(adj_matrix.shape[1]):
-    #         edge : tuple = (row, column)
-    #         edges.append(edge)
-    #         capacities[edge] = adj_matrix[row][column]
-    #         costs[edge] = 1 if (row, column) in enemy_positions else 99
+    for row in range(adj_matrix.shape[0]):
+        for column in range(adj_matrix.shape[1]):
+            edge : tuple = (row, column)
+            edges.append(edge)
+            capacities[edge] = adj_matrix[row][column]
+            costs[edge] = 1 if (row, column) in enemy_positions else 99
 
-    # flow = model.addVars(edges, name = "flow")
+    flow = model.addVars(edges, name = "flow")
 
-    # model.addConstr(key_flow_constraint(flow, maze))
-
-    # for edge in edges:
-    #     model.addConstr(capacity_constraint(capacities, flow, edge))
+    model.addConstr(key_flow_constraint(flow, maze, index_dict))
     
-    # model.setObjective(objective(costs, flow, edges), GRB.MINIMIZE)
 
-    # model.optimize()
+    for edge in edges:
+        model.addConstr(capacity_constraint(capacities, flow, edge))
+    
+    model.setObjective(objective(costs, flow, edges), GRB.MINIMIZE)
+
+    model.optimize()
