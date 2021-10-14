@@ -41,35 +41,21 @@ else:
     for e in enemies:
         print("Enemy cell code : " + str(maze.cell_at(e[0], e[1]).cell_code))
 
-    bifurcations : list = maze.find_bifurcations()
     paths : list = maze.define_reduction_data()
 
-    bifurcation_str : str = "Bifurcations: "
-    for cell in bifurcations:
-        bifurcation_str += str(cell.cell_code) + " "
-    print(bifurcation_str)
+    adj_matrix, index_dict = maze.to_reduced_adj_matrix()
+    
+    print("The maze was generated.")
 
-    for path in paths:
-        t : str = ""
-        for cell in path:
-            t += str(cell.cell_code) + " "
-        print(t)
+    model : Model = Model(name = 'Game Level Playability Checker')
 
-    # adj_matrix : np.ndarray = maze.to_adj_matrix()
+    print("The optimization model was created.")
 
-    # print(adj_matrix)
+    capacities : dict = {}
+    costs : dict = {}
+    edges : list = []
 
-    # print("The maze was generated.")
-
-    # model : Model = Model(name = 'Game Level Playability Checker')
-
-    # print("The optimization model was created.")
-
-    # capacities : dict = {}
-    # costs : dict = {}
-    # edges : list = []
-
-    # enemy_positions : list = maze.enemies_mat_indexes
+    enemy_positions : list = maze.enemies_mat_indexes
 
     # for row in range(adj_matrix.shape[0]):
     #     for column in range(adj_matrix.shape[1]):

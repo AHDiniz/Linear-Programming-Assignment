@@ -107,6 +107,11 @@ class Maze:
     def cell_at(self, x : int, y : int) -> Cell:
         return self.__map[x][y]
     
+    def cell_with_code(self, code : int) -> Cell:
+        x : int = int(code / self.__rows)
+        y : int = code % self.__columns
+        return self.cell_at(x, y) 
+
     def positions_of_type(self, cell_type : CellType) -> list:
         result : list = []
         for row in range(self.__rows):
@@ -197,13 +202,17 @@ class Maze:
 
         return paths
 
-
-    def to_reduced_adj_matrix(self) -> np.ndarray:
+    # Returns adjacency matrix and dictionary of cell codes and matrix indices:
+    def to_reduced_adj_matrix(self) -> tuple:
         paths : list = self.define_reduction_data()
         reverse_paths : list = []
 
         nodes : list = []
-        edges : dict = []
+        edges : dict = {}
+
+        index_dict : dict = {}
+        matrix_size : int = len(paths) + 1 + self.__enemy_count
+        adj_matrix : np.ndarray = np.zeros((matrix_size, matrix_size))
 
         for path in paths:
             reverse_path : list = path.copy()
@@ -223,7 +232,31 @@ class Maze:
             if not end in nodes:
                 nodes.append(end)
             
-            edges[(start.cell_code, end.cell_code)] = len(path)
+            if start.cell_code in [CellType.KEY, CellType.ENEMY_1, CellType.ENEMY_2, CellType.ENEMY_3]:
+                edges[(-start.cell_code, end.cell_code)] = len(path)
+                edges[(start.cell_code, -start.cell_code)] = 1
+            else:
+                edges[(start.cell_code, end.cell_code)] = len(path)
+
+        for node in nodes:
+            index_dict[node] = -1
+        
+        current_index : int = 0
+        for edge, capacity in edges.items():
+            start : int = edge[0]
+            end : int = edge[1]
+
+            if index_dict[start] == -1:
+                index_dict[start] = current_index
+                current_index += 1
+            
+            if index_dict[end] == -1:
+                index_dict[end] = current_index
+                current_index += 1
+
+            adj_matrix[index_dict[start]][index_dict[end]] = capacity
+        
+        return adj_matrix, index_dict
 
     def to_adj_matrix(self) -> np.ndarray:
 
